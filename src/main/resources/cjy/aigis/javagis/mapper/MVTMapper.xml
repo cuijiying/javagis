@@ -20,7 +20,7 @@
                     </otherwise>
                 </choose>
                 ST_AsMVTGeom(
-                    ST_Simplify(geom_3857, 1000),
+                    geom_3857,
                     ST_TileEnvelope(#{z}, #{x}, #{y}),
                     2048,
                     512,
@@ -28,9 +28,10 @@
                 ) AS geom
             FROM ${layer}
             WHERE ST_Intersects(
-                geom_3857,
+                ST_Simplify(geom_3857, 1000),
                 ST_TileEnvelope(#{z}, #{x}, #{y})
             )
         ) AS tile;
     </select>
+
 </mapper>
