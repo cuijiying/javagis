@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cjy.aigis.javagis.mapper.MVTMapper">
+    <!-- ST_Simplify(geom_3857, 1000),-->
+    <select id="getTile" resultType="Object">
+        SELECT ST_AsMVT(tile, 'river', 2048, 'geom')
+        FROM (
+            SELECT
+                <choose>
+                    <when test="layer=='gis_osm_water_a_free_1'">
+                        gid,name,code,
+                    </when>
+                    <when test="layer=='gis_osm_waterways_free_1'">
+                        id,name,code,
+                    </when>
+                    <otherwise>
+                        name,code,
+                    </otherwise>
+                </choose>
+                ST_AsMVTGeom(
+                    ST_Simplify(geom_3857, 1000),
+                    ST_TileEnvelope(#{z}, #{x}, #{y}),
+                    2048,
+                    512,
+                    true
+                ) AS geom
+            FROM ${layer}
+            WHERE ST_Intersects(
+                geom_3857,
+                ST_TileEnvelope(#{z}, #{x}, #{y})
+            )
+        ) AS tile;
+    </select>
+</mapper>
